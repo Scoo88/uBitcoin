@@ -695,11 +695,11 @@ int Tx::sigHashSegwit(uint8_t h[32], uint8_t inputIndex, const Script scriptPubK
     return 32;
 }
 
-Signature Tx::signInput(uint8_t inputIndex, const PrivateKey pk, const Script redeemScript, SigHashType sighash){
+Signature Tx::signInput(uint8_t inputIndex, const PvtKey pk, const Script redeemScript, SigHashType sighash){
     uint8_t h[32];
     sigHash(h, inputIndex, redeemScript, sighash);
 
-    PublicKey pubkey = pk.publicKey();
+    PubKey pubkey = pk.publicKey();
     Signature sig = pk.sign(h);
 
     Script sc;
@@ -714,7 +714,7 @@ Signature Tx::signInput(uint8_t inputIndex, const PrivateKey pk, const Script re
 
     return sig;
 }
-Signature Tx::signSegwitInput(uint8_t inputIndex, const PrivateKey pk, const Script redeemScript, uint64_t amount, ScriptType type, SigHashType sighash){
+Signature Tx::signSegwitInput(uint8_t inputIndex, const PvtKey pk, const Script redeemScript, uint64_t amount, ScriptType type, SigHashType sighash){
     uint8_t h[32];
 
     ScriptType redeem_type = redeemScript.type();
@@ -725,7 +725,7 @@ Signature Tx::signSegwitInput(uint8_t inputIndex, const PrivateKey pk, const Scr
         sigHashSegwit(h, inputIndex, redeemScript, amount, sighash);
     }
 
-    PublicKey pubkey = pk.publicKey();
+    PubKey pubkey = pk.publicKey();
     Signature sig = pk.sign(h);
 
     if((type == P2SH_P2WPKH) || (type == P2SH_P2WSH)){

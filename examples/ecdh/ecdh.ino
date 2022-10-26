@@ -21,10 +21,10 @@ void setup(){
     secret1[i] = random(256); // TODO: use good hardware randomness here!!!
     secret2[i] = random(256);
   }
-  PrivateKey pk1(secret1);
-  PrivateKey pk2(secret2);
-  PublicKey pub1 = pk1.publicKey();
-  PublicKey pub2 = pk2.publicKey();
+  PvtKey pk1(secret1);
+  PvtKey pk2(secret2);
+  PubKey pub1 = pk1.publicKey();
+  PubKey pub2 = pk2.publicKey();
 
   // now each party does ecdh on it's private key with public key of the other party
   // we calculate it twice here to make sure we get the same shared secret

@@ -376,7 +376,7 @@ String HDPrivateKey::fingerprint() const{
 #endif
 
 HDPublicKey HDPrivateKey::xpub() const{
-    PublicKey p = publicKey();
+    PubKey p = publicKey();
     return HDPublicKey(p.point, chainCode, depth, parentFingerprint, childNumber, network, type);
 }
 HDPrivateKey HDPrivateKey::child(uint32_t index, bool hardened) const{
@@ -386,7 +386,7 @@ HDPrivateKey HDPrivateKey::child(uint32_t index, bool hardened) const{
     HDPrivateKey child;
 
     uint8_t sec[65] = { 0 };
-    PublicKey p = publicKey();
+    PubKey p = publicKey();
     int l = p.sec(sec, sizeof(sec));
     uint8_t hash[20] = { 0 };
     hash160(sec, l, hash);
@@ -666,7 +666,7 @@ size_t HDPublicKey::from_str(const char * xpubArr, size_t xpubLen){
     return xpubLen;
 }
 
-HDPublicKey::HDPublicKey():PublicKey(){
+HDPublicKey::HDPublicKey():PubKey(){
     memzero(prefix, 4);
     compressed = true;
     memzero(chainCode, 32);
@@ -729,13 +729,13 @@ int HDPublicKey::xpub(char * arr, size_t len) const{
 int HDPublicKey::address(char * addr, size_t len) const{
     switch(type){
         case P2WPKH:
-            return PublicKey::segwitAddress(addr, len, network);
+            return PubKey::segwitAddress(addr, len, network);
         case P2SH_P2WPKH:
-            return PublicKey::nestedSegwitAddress(addr, len, network);
+            return PubKey::nestedSegwitAddress(addr, len, network);
         case P2PKH:
-            return PublicKey::legacyAddress(addr, len, network);
+            return PubKey::legacyAddress(addr, len, network);
         default:
-            return PublicKey::segwitAddress(addr, len, network);
+            return PubKey::segwitAddress(addr, len, network);
     }
 }
 #if USE_ARDUINO_STRING || USE_STD_STRING
@@ -747,13 +747,13 @@ String HDPublicKey::xpub() const{
 String HDPublicKey::address() const{
     switch(type){
         case P2WPKH:
-            return PublicKey::segwitAddress(network);
+            return PubKey::segwitAddress(network);
         case P2SH_P2WPKH:
-            return PublicKey::nestedSegwitAddress(network);
+            return PubKey::nestedSegwitAddress(network);
         case P2PKH:
-            return PublicKey::legacyAddress(network);
+            return PubKey::legacyAddress(network);
         default:
-            return PublicKey::segwitAddress(network);
+            return PubKey::segwitAddress(network);
     }
 }
 #endif

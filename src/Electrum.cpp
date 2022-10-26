@@ -151,7 +151,7 @@ uint8_t ElectrumTx::sign(const HDPrivateKey account){
         ScriptType type = txInsMeta[i].hd.type;
         pub.type = type;
         if(pub == txInsMeta[i].hd){
-            PrivateKey pk = account.child(txInsMeta[i].derivation[0]).child(txInsMeta[i].derivation[1]);
+            PvtKey pk = account.child(txInsMeta[i].derivation[0]).child(txInsMeta[i].derivation[1]);
             if(type == P2PKH || type == P2SH || type == UNKNOWN_TYPE || type == DIRECT_SCRIPT){
                 tx.signInput(i, pk);
             }else{

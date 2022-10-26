@@ -9,8 +9,8 @@
 
 /** \brief Derivation information */
 typedef struct{
-	/** \brief PublicKey that we are going to derive */
-    PublicKey pubkey;
+	/** \brief PubKey that we are going to derive */
+    PubKey pubkey;
     /** \brief Fingerprint of the root HD key */
     uint8_t fingerprint[4];
     /** \brief Derivation path */
@@ -21,7 +21,7 @@ typedef struct{
 /** \brief Partial signature */
 typedef struct{
     /** \brief Public key for the signature */
-    PublicKey pubkey;
+    PubKey pubkey;
     /** \brief Signature we generated */
     Signature signature;
 } PSBTPartialSignature;

@@ -95,7 +95,7 @@ void Script::fromAddress(const char * address){
         }
     }
 }
-Script::Script(const PublicKey pubkey, ScriptType type){
+Script::Script(const PubKey pubkey, ScriptType type){
     init();
     if(type == P2PKH){
         scriptLen = 25;
@@ -340,7 +340,7 @@ size_t Script::push(const uint8_t * data, size_t len){
     scriptLen += len;
     return scriptLen;
 }
-size_t Script::push(const PublicKey pubkey){
+size_t Script::push(const PubKey pubkey){
     uint8_t sec[65];
     uint8_t len = pubkey.sec(sec, sizeof(sec));
     push(len);
@@ -415,7 +415,7 @@ Witness::Witness(const uint8_t * buffer, size_t len){
     ParseByteStream s(buffer, len);
     Witness::from_stream(&s);
 }
-Witness::Witness(const Signature sig, const PublicKey pubkey){
+Witness::Witness(const Signature sig, const PubKey pubkey){
     init();
     push(sig);
     push(pubkey);
@@ -555,7 +555,7 @@ size_t Witness::push(const uint8_t * data, size_t len){
     numElements++;
     return witnessLen;
 }
-size_t Witness::push(const PublicKey pubkey){
+size_t Witness::push(const PubKey pubkey){
     uint8_t sec[65];
     uint8_t len = pubkey.sec(sec, sizeof(sec));
     push(sec, len);

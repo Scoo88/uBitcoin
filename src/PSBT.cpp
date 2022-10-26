@@ -624,7 +624,7 @@ uint8_t PSBT::sign(const HDPrivateKey root){
                         }
                         account = root.derive(first_derivation, first_derivation_len);
                     }
-                    PrivateKey pk;
+                    PvtKey pk;
                     // checking if cached key is ok
                     if(memcmp(first_derivation, txInsMeta[i].derivations[j].derivation, first_derivation_len*sizeof(uint32_t))==0){
                         pk = account.derive(txInsMeta[i].derivations[j].derivation+first_derivation_len, txInsMeta[i].derivations[j].derivationLen - first_derivation_len);

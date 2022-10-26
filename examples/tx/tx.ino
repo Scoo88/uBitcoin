@@ -8,7 +8,7 @@ void setup() {
   }
 
   // Single private key for testnet
-  PrivateKey privateKey("cQwxqQwCwGoirnTkVnNt4XqJuEv24HYBvVWCTLtL5g1kx9Q1AEhE");
+  PvtKey privateKey("cQwxqQwCwGoirnTkVnNt4XqJuEv24HYBvVWCTLtL5g1kx9Q1AEhE");
   Serial.println(privateKey.address());
 
   TxIn txIn("fbeae5f43d76fc3035cb4190baaf8cc123dd04f11c98c8f19a8b12cb4ce90db0", 0);

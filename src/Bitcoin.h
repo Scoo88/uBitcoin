@@ -41,7 +41,7 @@ typedef struct {
     uint8_t p2sh;    
     /** \brief Prefix for segwit addreses ...for regtest it is larger */
     char bech32[5];  
-    /** \brief Wallet Import Format, used in PrivateKey */
+    /** \brief Wallet Import Format, used in PvtKey */
     uint8_t wif;     
     /** \brief HD private key for legacy addresses (P2PKH) */
     uint8_t xprv[4]; 
@@ -105,8 +105,8 @@ enum SigHashType{
 
 /* forward declarations */
 class Signature;
-class PublicKey;
-class PrivateKey;
+class PubKey;
+class PvtKey;
 class HDPublicKey;
 class HDPrivateKey;
 class Script;
@@ -140,22 +140,22 @@ size_t mnemonicToEntropy(char * mnemonic, uint8_t * output, size_t outputLen);
 #endif
 
 /**
- *  PublicKey class.
+ *  PubKey class.
  *
- *  Derived from ECPoint class, therefore you can add or substract them, multiply by ECScalar or PrivateKey.
+ *  Derived from ECPoint class, therefore you can add or substract them, multiply by ECScalar or PvtKey.
  *
  *  `compressed` flag determines what public key sec format to use by default:
  *  - `compressed = false` will use 65-byte representation (`04<x><y>`)
  *  - `compressed = true` will use 33-byte representation (`03<x>` if y is odd, `02<x>` if y is even)
  */
-class PublicKey : public ECPoint{
+class PubKey : public ECPoint{
 public:
-    PublicKey(){ reset(); };
-    PublicKey(const uint8_t pubkeyArr[64], bool use_compressed){ reset(); memcpy(point, pubkeyArr, 64); compressed=use_compressed; };
-    PublicKey(const uint8_t * secArr){ reset(); parse(secArr, 33 + ((uint8_t)(secArr[0]==0x04))*32); };
-    explicit PublicKey(const char * secHex){ reset(); from_str(secHex, strlen(secHex)); };
+    PubKey(){ reset(); };
+    PubKey(const uint8_t pubkeyArr[64], bool use_compressed){ reset(); memcpy(point, pubkeyArr, 64); compressed=use_compressed; };
+    PubKey(const uint8_t * secArr){ reset(); parse(secArr, 33 + ((uint8_t)(secArr[0]==0x04))*32); };
+    explicit PubKey(const char * secHex){ reset(); from_str(secHex, strlen(secHex)); };
     // do I need this?
-    PublicKey(ECPoint p){ reset(); memcpy(point, p.point, 64); compressed=p.compressed; };
+    PubKey(ECPoint p){ reset(); memcpy(point, p.point, 64); compressed=p.compressed; };
     /**
      *  \brief Fills `addr` with legacy Pay-To-Pubkey-Hash address (P2PKH, `1...` for mainnet)
      */
@@ -195,28 +195,28 @@ public:
 };
 
 /**
- *  PrivateKey class.
+ *  PvtKey class.
  *  Corresponding public key (point on curve) will be calculated in the constructor.
  *      as point calculation is pretty slow, class initialization can take some time.
  */
-class PrivateKey : public ECScalar{
+class PvtKey : public ECScalar{
 protected:
     /** \brief corresponding point on curve ( secret * G ) */
-    PublicKey pubKey;
+    PubKey pubKey;
     virtual size_t to_str(char * buf, size_t len) const{ return wif( buf, len); };
     virtual size_t from_str(const char * buf, size_t len){ return fromWIF(buf, len); };
     virtual size_t from_stream(ParseStream *s);
 public:
-    PrivateKey();
-    PrivateKey(const uint8_t secret_arr[32], bool use_compressed = true, const Network * net = &DEFAULT_NETWORK);
+    PvtKey();
+    PvtKey(const uint8_t secret_arr[32], bool use_compressed = true, const Network * net = &DEFAULT_NETWORK);
 #if USE_ARDUINO_STRING
-    PrivateKey(const String wifString);
+    PvtKey(const String wifString);
 #elif USE_STD_STRING
-    PrivateKey(const std::string wifString);
+    PvtKey(const std::string wifString);
 #else
-    PrivateKey(const char * wifArr);
+    PvtKey(const char * wifArr);
 #endif
-    ~PrivateKey();
+    ~PvtKey();
     /** \brief Length of the key in WIF format (52). In reality not always 52... */
     virtual size_t stringLength() const{ return 52; };
     virtual size_t length() const{ return 32; };
@@ -236,8 +236,8 @@ public:
     /** \brief Loads the private key from a string in Wallet Import Format */
     int fromWIF(const char * wifArr, size_t wifSize);
     int fromWIF(const char * wifArr);
-    /** \brief Returns the corresponding PublicKey = secret * GeneratorPoint */
-    PublicKey publicKey() const;
+    /** \brief Returns the corresponding PubKey = secret * GeneratorPoint */
+    PubKey publicKey() const;
     /** \brief Signs the hash and returns the Signature */
     Signature sign(const uint8_t hash[32]) const; // pass 32-byte hash of the message here
 
@@ -261,24 +261,24 @@ public:
     std::string segwitAddress() const;
     std::string nestedSegwitAddress() const;
 #endif
-//    PrivateKey &operator=(const PrivateKey &other);                   // assignment
+//    PvtKey &operator=(const PvtKey &other);                   // assignment
     /** \brief Performs ECDH key agreement using public key of another party.
      *  32-byte shared secret will be written to `shared_secret` array.
      *  Optional parameter hash (true by default) defines if you want sha256(<x><y>) or just <x>.
      *  Having hash=true is recommended unless you have a very good reason not to use it.
      */
-    int ecdh(const PublicKey pub, uint8_t shared_secret[32], bool hash=true);
+    int ecdh(const PubKey pub, uint8_t shared_secret[32], bool hash=true);
 };
 
 /**
- *  \brief HD Private Key class. Derived from PrivateKey class.
+ *  \brief HD Private Key class. Derived from PvtKey class.
  *         Works according to [bip32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki),
  *         [bip39](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and 
  *         [slip32](https://github.com/satoshilabs/slips/blob/master/slip-0032.md).
  *  You can generate the key from mnemonic or seed, derive children and hardened children.
  *  xprv and xpub methods return strings according to slip32, xprv/xpub for bip44, yprv/ypub for bip49 and zprv/zpub for bip84
  */
-class HDPrivateKey : public PrivateKey{
+class HDPrivateKey : public PvtKey{
 protected:
     void init();
     size_t to_bytes(uint8_t * arr, size_t len) const;
@@ -362,19 +362,19 @@ public:
     HDPrivateKey derive(String path) const{ return derive(path.c_str()); };
 #endif
     // just to make sure it is compressed
-    PublicKey publicKey() const{ PublicKey p = pubKey; p.compressed = true; return p; };
+    PubKey publicKey() const{ PubKey p = pubKey; p.compressed = true; return p; };
 //    HDPrivateKey &operator=(const HDPrivateKey &other);                   // assignment
 };
 
 /**
- *  \brief HD Public Key class. Derived from PublicKey class.
+ *  \brief HD Public Key class. Derived from PubKey class.
  *         Works according to [bip32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki),
  *         [bip39](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and 
  *         [slip32](https://github.com/satoshilabs/slips/blob/master/slip-0032.md).
  *  You can derive children
  *  xpub method return strings according to slip32, xpub for bip44, ypub for bip49 and zpub for bip84
  */
-class HDPublicKey : public PublicKey{
+class HDPublicKey : public PubKey{
     size_t to_bytes(uint8_t * arr, size_t len) const;
     virtual size_t to_str(char * buf, size_t len) const{ return xpub( buf, len); };
     virtual size_t from_str(const char * buf, size_t len);
@@ -510,7 +510,7 @@ public:
     Script(const std::string address){ init(); fromAddress(address.c_str()); };
 #endif
     /** \brief creates one of standart scripts (P2PKH, P2WPKH) */
-    Script(const PublicKey pubkey, ScriptType type = P2PKH);
+    Script(const PubKey pubkey, ScriptType type = P2PKH);
     /** \brief creates one of standart scripts (P2SH, P2WSH) */
     Script(const Script &other, ScriptType type);
     Script(const Script &other); // copy
@@ -534,7 +534,7 @@ public:
     /** \brief pushes bytes from data object to the end */
     size_t push(const uint8_t * data, size_t len);
     /** \brief adds <len><sec> to the script */
-    size_t push(const PublicKey pubkey);
+    size_t push(const PubKey pubkey);
     /** \brief adds <len><der><sigType> to the script */
     size_t push(const Signature sig, SigHashType sigType = SIGHASH_ALL);
     /** \brief adds <len><script> to the script (used for P2SH) */
@@ -574,7 +574,7 @@ public:
     virtual size_t length() const;
     Witness();
     Witness(const uint8_t * buffer, size_t len);
-    Witness(const Signature sig, const PublicKey pub);
+    Witness(const Signature sig, const PubKey pub);
     Witness(const Witness &other); // copy
     ~Witness(){ if(witnessArray){ free(witnessArray); } };
     /** \brief returns number of elements in the witness */
@@ -582,7 +582,7 @@ public:
     /** \brief adds `<len><data>` to the witness */
     size_t push(const uint8_t * data, size_t len);
     /** \brief adds `<len><sec>` to the witness */
-    size_t push(const PublicKey pubkey);
+    size_t push(const PubKey pubkey);
     /** \brief adds `<len><der><sigType>` to the witness */
     size_t push(const Signature sig, SigHashType sigType = SIGHASH_ALL);
     /** \brief adds `<len><script>` to the witness */
@@ -728,9 +728,9 @@ public:
      *         Don't forget to construct txIns[i].scriptSig correctly if you are using P2SH.
      *         For P2WPKH, P2WSH and P2SH-P2WPKH use signSegwitInput method.
      */
-    Signature signInput(uint8_t inputIndex, const PrivateKey pk, const Script redeemScript, SigHashType sighash = SIGHASH_ALL);
+    Signature signInput(uint8_t inputIndex, const PvtKey pk, const Script redeemScript, SigHashType sighash = SIGHASH_ALL);
     /** \brief signs legacy input and returns a signature */
-    Signature signInput(uint8_t inputIndex, const PrivateKey pk){
+    Signature signInput(uint8_t inputIndex, const PvtKey pk){
         return signInput(inputIndex, pk, Script(pk.publicKey(), P2PKH));
     };
 
@@ -738,11 +738,11 @@ public:
      *         Don't forget to construct txIns[i].witness correctly if you are using P2WSH or P2SH-P2WSH.
      *         For P2PKH and P2SH use signInput method.
      */
-    Signature signSegwitInput(uint8_t inputIndex, const PrivateKey pk, const Script redeemScript, uint64_t amount, ScriptType type = P2WSH, SigHashType sighash = SIGHASH_ALL);
+    Signature signSegwitInput(uint8_t inputIndex, const PvtKey pk, const Script redeemScript, uint64_t amount, ScriptType type = P2WSH, SigHashType sighash = SIGHASH_ALL);
     /** \brief signs segwit input and returns a signature. Uses native segwit (P2WPKH) by default, 
      *         you can also specify the type to be P2SH-P2WPKH to sign nested segwit transaction.
      */
-    Signature signSegwitInput(uint8_t inputIndex, const PrivateKey pk, uint64_t amount, ScriptType type = P2WPKH){
+    Signature signSegwitInput(uint8_t inputIndex, const PvtKey pk, uint64_t amount, ScriptType type = P2WPKH){
         return signSegwitInput(inputIndex, pk, Script(pk.publicKey(), P2WPKH), amount, type); // FIXME: are you sure?
     };
 
